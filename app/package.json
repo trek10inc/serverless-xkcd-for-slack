@@ -1,0 +1,13 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "main module",
+  "dependencies": {
+    "aws-sdk": "^2.3.3",
+    "elasticlunr": "^0.8.8",
+    "lodash": "^4.11.1",
+    "oauth": "^0.9.14",
+    "qs": "^6.1.0",
+    "request": "^2.71.0"
+  }
+}

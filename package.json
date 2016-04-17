@@ -1,0 +1,19 @@
+{
+  "name": "serverless-xkcd-for-slack",
+  "version": "1.0.0",
+  "description": "Serverless Slack XKCD app with in-memory searchable index",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jared Short <jshort@trek10.com> (https://www.trek10.com)",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.3.3",
+    "elasticlunr": "^0.8.8",
+    "lodash": "^4.11.1",
+    "oauth": "^0.9.14",
+    "qs": "^6.1.0",
+    "request": "^2.71.0"
+  }
+}

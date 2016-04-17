@@ -1,0 +1,3 @@
+{
+  "body": "token=AAAAaaaaBBBBBbbbbb&team_id=T0123ABC&team_domain=example&channel_id=D0123ABC&channel_name=general&user_id=U0123ABC&user_name=johndoe&command=%2Fxkcd&text=correct+horse+battery+staple&response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2T000000%2F1111111111%2FAAAAABBBBB111111"
+}
