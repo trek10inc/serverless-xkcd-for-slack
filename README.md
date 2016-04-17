@@ -1,4 +1,6 @@
-# XKCD for Slack
+# Serverless XKCD for Slack
+
+[![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
 
 A super efficient, fast, Serverless XKCD slash command for Slack. Relies on an in-memory Elasticlunr index for full text search.
 
