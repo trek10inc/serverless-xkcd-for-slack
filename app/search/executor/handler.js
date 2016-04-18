@@ -8,58 +8,29 @@ const xkcdData = require('./xkcd-data.json');
 
 let CACHE = {};
 
-
-//TODO shuffle this all off too another worker so we can instantly respond to slack message
-
-// Could probably configure to weight some fields more so than other
-//  preliminary tests are good though
 let index = elasticlunr(function () {
     this.addField('title');
     this.addField('transcript');
     this.addField('alt');
-    this.setRef('num');
+    this.addField('number');
+    this.setRef('id');
 });
-
-function sendApology(event){
-
-  // Did this, quite frankly too lazy to promisify request lib ¯\_(ツ)_/¯
-  return new Promise(function(resolve, reject){
-    let message;
-
-    const apologies = [
-      'Sorry the cache was cold... putting it in the oven!',
-      'Caches roasting over the open fire... your comics coming up soon.',
-      'There is no cloud, it\'s just someone else computer... and it\'s going slower than we\'d like right now.',
-      'Cooking up a fresh batch of cache just for you, sorry for the wait!',
-      'Why did the developer go broke? Because he used up all his cache... sorry for the wait!',
-      'Getting more Cache in our Series A funding round... sorry for the wait!',
-      'There are only two hard things in computer science: cache invalidation naming things, and off-by-one errors... sorry for the wait!',
-    ];
-
-    message = {
-      'response_type': 'in_channel',
-      'text': _.sample(apologies)
-    };
-
-    request({
-        url: event.response_url,
-        method: 'POST',
-        json: message
-      }, function(error, response, body){
-          if(error) {
-              console.log(error);
-              reject(error);
-          } else {
-              console.log(response.statusCode, body);
-              resolve();
-          }
-      });
-  });
-}
 
 function doSearch(event, callback){
   const search = event.text;
-  const results = CACHE.index.search(search);
+  console.log('SEARCH:', search);
+
+  // Further improvement would to be to add some variance
+  // within some margin to allow a vague search term to return different comics
+  const results = CACHE.index.search(search,{
+    fields: {
+        number: {boost: 999}, // Hack to force an "ID" to always bubble to top
+        title: {boost: 8},
+        transcript: {boost: 2},
+        alt: {boost: 1}
+    }
+  });
+
   let message;
 
   if(results[0]){
@@ -86,45 +57,36 @@ function doSearch(event, callback){
             console.log(error);
         } else {
             console.log(response.statusCode, body);
-          }
-
+        }
         callback();
     });
 }
 
 module.exports.handler = function(event, context, callback) {
   console.log(event);
-
-  // Confusing because we have to parse a string, then the actual event
-  //   object to extract a query string as the usable object
   event = qs.parse(event.body);
 
   /*
-  If we take longer than 3 seconds, slack complains. On cache miss the index
-  build takes ~3 seconds. A cache hit is 2.5 milliseconds (a little faster).
-  So, if we don't have cache, we are responsible universe citizens and send
-  an apology and followup later with the results.
+  On cache miss the index build takes ~3 seconds.
+  A cache hit is 2.5 milliseconds (a little faster).
   */
-
-  // Switch to promises cause this responds poorly
 
   if(CACHE.index){
     console.info('CACHE: HIT');
-    doSearch(event, callback);
   } else {
-    sendApology(event).then(function(){
       console.info('CACHE: MISS');
       _.forEach(xkcdData, function(datum){
         datum.transcript = datum.transcript.replace(/[^a-zA-Z ]/g, ' ');
         index.addDoc({
-          num: datum.num,
+          id: datum.num,
+          number: datum.num,
           title: datum.title,
           transcript: datum.transcript,
           alt: datum.alt
         });
       });
       CACHE.index = index;
-      doSearch(event, callback);
-    });
   }
+
+  doSearch(event, callback);
 };
